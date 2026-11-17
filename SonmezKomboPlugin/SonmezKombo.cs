@@ -10,7 +10,7 @@ using Serilog;
 
 namespace SonmezKomboPlugin;
 
-public class SonmezKombo : CriticalBackgroundService, IAssettoServerAutostart
+public class SonmezKombo : BackgroundService
 {
     private class PlayerState
     {
@@ -41,7 +41,7 @@ public class SonmezKombo : CriticalBackgroundService, IAssettoServerAutostart
         ScoreStore store,
         HubState hub,
         CSPServerScriptProvider scriptProvider,
-        IHostApplicationLifetime applicationLifetime) : base(applicationLifetime)
+        IHostApplicationLifetime applicationLifetime)
     {
         _config = config;
         _entryCarManager = entryCarManager;

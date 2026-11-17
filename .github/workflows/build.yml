@@ -48,7 +48,12 @@ jobs:
           git checkout "$REF"
 
       - name: Eklentiyi AssettoServer/plugins icine koy
-        run: cp -r SonmezKomboPlugin AssettoServer/plugins/SonmezKomboPlugin
+        run: |
+          echo "AssettoServer klasor yapisi:"
+          ls AssettoServer
+          mkdir -p AssettoServer/plugins
+          cp -r SonmezKomboPlugin AssettoServer/plugins/SonmezKomboPlugin
+          ls AssettoServer/plugins
 
       - name: Framework'u AssettoServer ile eslestir
         run: |

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- GitHub workflow bunu AssettoServer'in kullandigi framework ile otomatik eslestirir -->
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AssettoServer\AssettoServer.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AssettoServer.Shared\AssettoServer.Shared.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="lua\sonmezkombo.lua" LogicalName="sonmezkombo.lua" />
+    <EmbeddedResource Include="assets\sonmezlogo.png" LogicalName="sonmezlogo.png" />
+  </ItemGroup>
+
+</Project>

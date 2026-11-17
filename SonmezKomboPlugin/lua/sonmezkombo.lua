@@ -1,7 +1,7 @@
 -- Sönmez Kombo Puan (sunucu scripti)
 -- Puanı sunucu plugin'i hesaplar, bu script sadece gösterir.
 
-local SCALE = 1.0
+local SCALE = 0.75
 -- Yerlesim: ana panel 'center' veya 'right'; PB paneli 'right' veya 'left'
 local MAIN_POS = 'center'
 local PB_POS = 'right'

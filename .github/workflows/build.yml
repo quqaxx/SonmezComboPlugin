@@ -62,20 +62,6 @@ jobs:
           echo "AssettoServer framework: $TFM"
           sed -i "s|<TargetFramework>.*</TargetFramework>|<TargetFramework>$TFM</TargetFramework>|" AssettoServer/plugins/SonmezKomboPlugin/SonmezKomboPlugin.csproj
 
-      - name: Tiplerin namespace'ini bul ve using ekle
-        run: |
-          cd AssettoServer
-          for T in CriticalBackgroundService IAssettoServerAutostart; do
-            F=$(grep -rlE "(class|interface) $T\b" --include=*.cs --exclude-dir=plugins --exclude-dir=bin --exclude-dir=obj . | head -n1 || true)
-            echo "$T -> $F"
-            if [ -n "$F" ]; then
-              NS=$(grep -m1 -oP '^namespace\s+\K[\w.]+' "$F" || true)
-              echo "   namespace: $NS"
-              if [ -n "$NS" ]; then sed -i "1i using $NS;" plugins/SonmezKomboPlugin/SonmezKombo.cs; fi
-            fi
-          done
-          head -n 14 plugins/SonmezKomboPlugin/SonmezKombo.cs
-
       - name: SDK surumlerini goster
         run: |
           dotnet --list-sdks

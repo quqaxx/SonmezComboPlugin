@@ -1,0 +1,85 @@
+name: Build SonmezKomboPlugin
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      assettoserver_ref:
+        description: "AssettoServer tag/branch (bos birakirsan 0.0.55 preview 44 otomatik bulunur)"
+        required: false
+        default: ""
+
+env:
+  # Otomatik bulunamazsa buraya elle tag yazabilirsin (ornek: v0.0.55-preview44)
+  ASSETTOSERVER_REF: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: .NET SDK kur
+        uses: actions/setup-dotnet@v4
+        with:
+          # .NET 11 henuz preview olabilir, bu yuzden quality: preview sart
+          dotnet-quality: preview
+          dotnet-version: |
+            11.0.x
+            10.0.x
+            9.0.x
+            8.0.x
+
+      - name: AssettoServer kaynagini indir (0.0.55 preview 44)
+        run: |
+          git clone https://github.com/compujuckel/AssettoServer.git AssettoServer
+          cd AssettoServer
+          REF="${{ github.event.inputs.assettoserver_ref }}"
+          if [ -z "$REF" ]; then REF="$ASSETTOSERVER_REF"; fi
+          if [ -z "$REF" ]; then
+            REF=$(git tag | grep -E '0\.0\.55' | grep -E '(preview|pre|p)[-_.]?44$' | sort -V | tail -n1 || true)
+          fi
+          if [ -z "$REF" ]; then
+            echo "0.0.55 preview 44 tag'i bulunamadi. Mevcut 0.0.55 tag'leri:"
+            git tag | grep -E '0\.0\.55' | sort -V || true
+            exit 1
+          fi
+          echo "Kullanilan ref: $REF"
+          git checkout "$REF"
+
+      - name: Eklentiyi AssettoServer/plugins icine koy
+        run: cp -r SonmezKomboPlugin AssettoServer/plugins/SonmezKomboPlugin
+
+      - name: Framework'u AssettoServer ile eslestir
+        run: |
+          TFM=$(grep -rhoP '(?<=<TargetFramework>)[^<]+' AssettoServer/AssettoServer/AssettoServer.csproj AssettoServer/Directory.Build.props 2>/dev/null | head -n1 || true)
+          if [ -z "$TFM" ]; then TFM="net9.0"; fi
+          echo "AssettoServer framework: $TFM"
+          sed -i "s|<TargetFramework>.*</TargetFramework>|<TargetFramework>$TFM</TargetFramework>|" AssettoServer/plugins/SonmezKomboPlugin/SonmezKomboPlugin.csproj
+
+      - name: Tiplerin namespace'ini bul ve using ekle
+        run: |
+          cd AssettoServer
+          for T in CriticalBackgroundService IAssettoServerAutostart; do
+            F=$(grep -rlE "(class|interface) $T\b" --include=*.cs --exclude-dir=plugins --exclude-dir=bin --exclude-dir=obj . | head -n1 || true)
+            echo "$T -> $F"
+            if [ -n "$F" ]; then
+              NS=$(grep -m1 -oP '^namespace\s+\K[\w.]+' "$F" || true)
+              echo "   namespace: $NS"
+              if [ -n "$NS" ]; then sed -i "1i using $NS;" plugins/SonmezKomboPlugin/SonmezKombo.cs; fi
+            fi
+          done
+          head -n 14 plugins/SonmezKomboPlugin/SonmezKombo.cs
+
+      - name: SDK surumlerini goster
+        run: |
+          dotnet --list-sdks
+          cat AssettoServer/global.json 2>/dev/null || true
+
+      - name: Derle
+        run: dotnet publish AssettoServer/plugins/SonmezKomboPlugin -c Release -o out/SonmezKomboPlugin
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SonmezKomboPlugin
+          path: out/SonmezKomboPlugin
